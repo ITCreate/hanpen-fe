@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.css" />
     <router-view />
   </div>
 </template>
