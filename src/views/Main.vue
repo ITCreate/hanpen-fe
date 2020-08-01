@@ -136,7 +136,7 @@ import { calcTriangleArea } from "../PolygonUtil";
 
 const HANDS_NUM = 12;
 const SCORE_BIAS = 10;
-const TURN_NUM = 5;
+const TURN_NUM = 3;
 
 export default {
   data() {
@@ -153,6 +153,7 @@ export default {
       showTooltipPlayer1: false,
       showTooltipPlayer2: false,
       turn: 0,
+      isBisy: false,
     };
   },
   computed: {
@@ -222,6 +223,8 @@ export default {
         .join(" ");
     },
     postWord(word) {
+      if (this.isBisy) return;
+
       this.postWords[this.currentPlayer].push(word);
       const currentPlayer = this.currentPlayer;
       this.showTooltip(currentPlayer, word.word, 500, true).then(() => {
@@ -229,16 +232,41 @@ export default {
           this.animationAddTriangle(
             currentPlayer,
             this.postWords[currentPlayer]
-          ).then(() => {
-            this.addTriangle(
-              currentPlayer,
-              _.clone(this.postWords[currentPlayer])
-            );
-            this.postWords[currentPlayer] = [];
-          });
+          )
+            .then(() => {
+              this.addTriangle(
+                currentPlayer,
+                _.clone(this.postWords[currentPlayer])
+              );
+              this.postWords[currentPlayer] = [];
+            })
+            .then(() => {
+              if (this.leftTurn <= 0) {
+                if (this.playerScore(1) === this.playerScore(2)) {
+                  Promise.all(
+                    this.showTooltip(1, "引き分け", 5000),
+                    this.showTooltip(2, "引き分け", 5000)
+                  ).then(() => {
+                    this.gameReset();
+                  });
+                } else if (this.playerScore(1) >= this.playerScore(2)) {
+                  this.showTooltip(1, "私の勝ちだ！！", 5000, true).then(() => {
+                    this.gameReset();
+                  });
+                } else {
+                  this.showTooltip(2, "俺の勝ちだ！！", 5000, true).then(() => {
+                    this.gameReset();
+                  });
+                }
+              }
+            });
         }
       });
-      this.changePlayer();
+      this.isBisy = true;
+      setTimeout(() => {
+        this.isBisy = false;
+        this.changePlayer();
+      }, 1000);
     },
     gameReset() {
       console.log("gameReset");
@@ -278,32 +306,16 @@ export default {
               })
             )
           );
-          return this.showTooltip(
-            currentPlayer,
-            `${score}点だ！！！`,
-            500,
-            true
-          );
-        })
-        .then(() => {
-          if (this.leftTurn <= 0) {
-            if (this.playerScore(1) === this.playerScore(2)) {
-              Promise.all(
-                this.showTooltip(1, "引き分け", 5000),
-                this.showTooltip(2, "引き分け", 5000)
-              ).then(() => {
-                this.gameReset();
-              });
-            } else if (this.playerScore(1) >= this.playerScore(2)) {
-              this.showTooltip(1, "私の勝ちだ！！", 5000, true).then(() => {
-                this.gameReset();
-              });
-            } else {
-              this.showTooltip(2, "俺の勝ちだ！！", 5000, true).then(() => {
-                this.gameReset();
-              });
-            }
+
+          let content = "";
+          if (score >= 12000) {
+            content = `${score}点だ！！！`;
+          } else if (score >= 12000) {
+            content = `${score}点だ！！！`;
+          } else {
+            content = `${score}点だ！！！`;
           }
+          return this.showTooltip(currentPlayer, content, 500, true);
         });
     },
     showTooltip(player, content, time, isSpeech) {
