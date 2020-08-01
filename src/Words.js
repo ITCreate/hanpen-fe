@@ -3,7 +3,7 @@ import _ from "lodash"
 
 class Words {
     constructor() {
-        this.words = _.clone(words)
+        this.words = _.take(_.shuffle(words), 40)
     }
     getWords() {
         console.log("max X", _.maxBy(this.words, "x"))
@@ -11,7 +11,7 @@ class Words {
         console.log("max Y", _.maxBy(this.words, "y").y)
         console.log("min X", _.minBy(this.words, "x").x)
         console.log("min Y", _.minBy(this.words, "y").y)
-        return _.shuffle(this.words)
+        return this.words
     }
     maxPoint() {
         return {

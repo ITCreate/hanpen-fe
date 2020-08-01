@@ -23,41 +23,46 @@
         <div class="tooltip" v-show="showTooltipPlayer1">{{ tooltipContent1 }}</div>
       </div>
 
-      <svg
-        class="card"
-        width="600"
-        height="600"
-        viewBox="-1687 -1603 2727.0341099966664 2259.416395800985"
-      >
-        <template v-for="postWord in postWords[1]">
-          <circle
+      <svg class="card px-6" width="600" height="600" viewBox="0 0 601 601">
+        <defs>
+          <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="gray" stroke-width="0.5" />
+          </pattern>
+          <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+            <rect width="100" height="100" fill="url(#smallGrid)" />
+            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="gray" stroke-width="1" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+        <!-- <template v-for="pw in words">
+          <text
+            :key="pw.word"
+            style="fill-opacity: .4;"
+            :x="calcPointX(pw) - 10"
+            :y="calcPointY(pw) - 10"
+            font-size="24px"
+          >{{ pw.word }}</text>
+          <circle fill="red" :key="pw.key" :cx="calcPointX(pw)" :cy="calcPointY(pw)" r="5px" />
+        </template>-->
+        <template v-for="pw in postWords[1]">
+          <circle fill="red" :key="pw.key" :cx="calcPointX(pw)" :cy="calcPointY(pw)" r="3px" />
+          <text
+            :key="pw.key"
+            :x="calcPointX(pw) - 10"
+            :y="calcPointY(pw) - 10"
+            font-size="24px"
             fill="red"
-            :key="postWord.key"
-            :cx="postWord.x * 100"
-            :cy="postWord.y * 100"
-            r="10"
-          />
-          <text
-            :key="postWord.key"
-            :x="postWord.x * 100"
-            :y="postWord.y * 100"
-            font-size="80px"
-          >{{ postWord.word }}</text>
+          >{{ pw.word }}</text>
         </template>
-        <template v-for="postWord in postWords[2]">
-          <circle
-            fill="blue"
-            :key="postWord.key"
-            :cx="postWord.x * 100"
-            :cy="postWord.y * 100"
-            r="10"
-          />
+        <template v-for="pw in postWords[2]">
+          <circle fill="blue" :key="pw.key" :cx="calcPointX(pw)" :cy="calcPointY(pw)" r="3px" />
           <text
-            :key="postWord.key"
-            :x="postWord.x * 100"
-            :y="postWord.y * 100"
-            font-size="80px"
-          >{{ postWord.word }}</text>
+            :key="pw.key"
+            :x="calcPointX(pw) - 10"
+            :y="calcPointY(pw) - 10"
+            font-size="24px"
+            fill="blue"
+          >{{ pw.word }}</text>
         </template>
         <template v-for="(triangle) in triangles">
           <polygon
@@ -66,21 +71,22 @@
             :key="toPoints(triangle.points)"
             :points="toPoints(triangle.points)"
           />
-          <!-- <text
-            v-for="word in triangle.points"
-            :key="word.word"
-            :x="word.x * 100"
-            :y="word.y * 100"
-            font-size="70px"
-          >{{ word.word }}</text>-->
-          <circle
-            v-for="word in triangle.points"
+          <text
+            v-for="pw in triangle.points"
+            :key="pw.word"
+            style="fill-opacity: .4;"
+            :x="calcPointX(pw) - 10"
+            :y="calcPointY(pw) - 10"
+            font-size="24px"
+          >{{ pw.word }}</text>
+          <!-- <circle
+            v-for="pw in triangle.points"
             :fill="triangle.player === 1? 'red' : 'blue'"
-            :key="word.key"
-            :cx="word.x * 100"
-            :cy="word.y * 100"
-            r="10"
-          />
+            :key="pw.key"
+            :cx="calcPointX(pw)"
+            :cy="calcPointY(pw)"
+            r="3px"
+          />-->
         </template>
       </svg>
 
@@ -116,7 +122,7 @@
           :key="word.key"
           @click="postWord(word)"
         >
-          <div class="card is-size-5">{{word.word}}</div>
+          <div class="card is-size-5 has-background-primary has-text-white">{{word.word}}</div>
         </div>
       </div>
     </div>
@@ -130,7 +136,7 @@ import { calcTriangleArea } from "../PolygonUtil";
 
 const HANDS_NUM = 12;
 const SCORE_BIAS = 10;
-const TURN_NUM = 2;
+const TURN_NUM = 5;
 
 export default {
   data() {
@@ -180,6 +186,20 @@ export default {
   },
   mounted() {},
   methods: {
+    calcPointX(point) {
+      const length = this.maxPoint.max.x - this.maxPoint.min.x;
+      const x = point.x - this.maxPoint.min.x;
+
+      console.log(600 * (x / length), x / length, point.word);
+      return 600 * (x / length);
+    },
+    calcPointY(point) {
+      const length = this.maxPoint.max.y - this.maxPoint.min.y;
+      const y = point.y - this.maxPoint.min.y;
+
+      console.log(600 * (y / length), y / length, point.word);
+      return 600 * (y / length);
+    },
     playerScore(number) {
       return this.triangles
         .filter((triangle) => triangle.player === number)
@@ -198,7 +218,7 @@ export default {
     },
     toPoints(triangle) {
       return triangle
-        .map((word) => `${word.x * 100},${word.y * 100}`)
+        .map((word) => `${this.calcPointX(word)},${this.calcPointY(word)}`)
         .join(" ");
     },
     postWord(word) {
