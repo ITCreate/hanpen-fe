@@ -2,6 +2,7 @@
   <div class="container border mt-2">
     <div class="is-size-1 has-text-centered">残り{{ 3 - Math.floor(turn/6) }}ターン</div>
     <div class="columns">
+      <!-- プレイヤー1の情報 -->
       <div
         id="player1"
         class="column card"
@@ -9,7 +10,6 @@
         style="background-image: url('./study_gogaku_woman6_japanese.png'); background-repeat: no-repeat;
     background-position: 50% 90%;"
       >
-        <!-- プレイヤー1の情報 -->
         <div class="is-size-1">プレイヤー1</div>
         <div class="columns gages mx-2 my-1">
           <div
@@ -84,6 +84,7 @@
         </template>
       </svg>
 
+      <!-- プレイヤー2の情報 -->
       <div
         id="player2"
         class="column card"
@@ -91,7 +92,6 @@
         style="background-image: url('./study_gogaku_man6_japanese.png'); background-repeat: no-repeat;
     background-position: 50% 90%;"
       >
-        <!-- プレイヤー1の情報 -->
         <div class="is-size-1">プレイヤー2</div>
         <div class="columns gages mx-2 my-1">
           <div
@@ -105,8 +105,9 @@
         <div class="tooltip" v-if="showTooltipPlayer2">{{ tooltipContent2 }}</div>
       </div>
     </div>
+
+    <!-- 出す単語を選ぶ -->
     <div>
-      <!-- 出す単語を選ぶ -->
       <p class="is-size-2 mb-4">プレイヤー{{ currentPlayer }}の番です 出す単語を選んでください</p>
       <div class="columns is-multiline">
         <div
@@ -193,58 +194,56 @@ export default {
     postWord(word) {
       this.postWords[this.currentPlayer].push(word);
       const currentPlayer = this.currentPlayer;
-      this.showTooltip(currentPlayer, word.word, 500).then(() => {
+      this.showTooltip(currentPlayer, word.word, 500, true).then(() => {
         if (this.postWords[currentPlayer].length === 3) {
-          this.showTooltip(
+          this.animationAddTriangle(
             currentPlayer,
-            [this.postWords[currentPlayer][0].word].join("!!\n"),
-            500
-          )
-            .then(() =>
-              this.showTooltip(
-                currentPlayer,
-                [
-                  this.postWords[currentPlayer][0].word,
-                  this.postWords[currentPlayer][1].word,
-                  "",
-                ].join("!!\n"),
-                500
-              )
-            )
-            .then(() =>
-              this.showTooltip(
-                currentPlayer,
-                [
-                  this.postWords[currentPlayer][0].word,
-                  this.postWords[currentPlayer][1].word,
-                  this.postWords[currentPlayer][2].word,
-                  "",
-                ].join("!!\n"),
-                500
-              )
-            )
-            .then(() => {
-              const score = Math.ceil(
-                calcTriangleArea(
-                  this.postWords[currentPlayer].map((point) => {
-                    return [point.x * SCORE_BIAS, point.y * SCORE_BIAS];
-                  })
-                )
-              );
-              return this.showTooltip(currentPlayer, `${score}点だ！！！`, 500);
-            })
-            .then(() => {
-              this.addTriangle(
-                currentPlayer,
-                _.clone(this.postWords[currentPlayer])
-              );
-              this.postWords[currentPlayer] = [];
-            });
+            this.postWords[currentPlayer]
+          ).then(() => {
+            this.addTriangle(
+              currentPlayer,
+              _.clone(this.postWords[currentPlayer])
+            );
+            this.postWords[currentPlayer] = [];
+          });
         }
       });
       this.changePlayer();
     },
-    showTooltip(player, content, time) {
+    // 三角形が完成した時の演出
+    animationAddTriangle(currentPlayer, points) {
+      return this.showTooltip(currentPlayer, [points[0].word].join("!!\n"), 500)
+        .then(() =>
+          this.showTooltip(
+            currentPlayer,
+            [points[0].word, points[1].word, ""].join("!!\n"),
+            500
+          )
+        )
+        .then(() =>
+          this.showTooltip(
+            currentPlayer,
+            [points[0].word, points[1].word, points[2].word, ""].join("!!\n"),
+            500
+          )
+        )
+        .then(() => {
+          const score = Math.ceil(
+            calcTriangleArea(
+              points.map((point) => {
+                return [point.x * SCORE_BIAS, point.y * SCORE_BIAS];
+              })
+            )
+          );
+          return this.showTooltip(
+            currentPlayer,
+            `${score}点だ！！！`,
+            500,
+            true
+          );
+        });
+    },
+    showTooltip(player, content, time, isSpeech) {
       return new Promise((resolve) => {
         if (player === 1) {
           this.tooltipContent1 = content;
@@ -252,6 +251,11 @@ export default {
         } else {
           this.tooltipContent2 = content;
           this.showTooltipPlayer2 = true;
+        }
+
+        if (isSpeech) {
+          const uttr = new SpeechSynthesisUtterance(content);
+          speechSynthesis.speak(uttr);
         }
 
         setTimeout(() => {
