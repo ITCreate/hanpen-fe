@@ -112,8 +112,8 @@
       <div class="columns is-multiline">
         <div
           class="column is-2 has-text-centered"
-          v-for="word in hands"
-          :key="word.word"
+          v-for="(word, index) in hands"
+          :key="index"
           @click="postWord(word)"
         >
           <div class="card is-size-5">{{word.word}}</div>
