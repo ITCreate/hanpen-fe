@@ -27,7 +27,7 @@
         class="card"
         width="600"
         height="600"
-        viewBox="-1687 -1603 2727.0341099966664 2259.416395800985"
+        viewBox="-1248.2345089531165 -1547.8524966162418 2727.0341099966664 2259.416395800985"
       >
         <template v-for="postWord in postWords[1]">
           <circle
@@ -198,6 +198,7 @@ export default {
         .join(" ");
     },
     postWord(word) {
+      
       this.postWords[this.currentPlayer].push(word);
       const currentPlayer = this.currentPlayer;
       this.showTooltip(currentPlayer, word.word, 500, true).then(() => {
