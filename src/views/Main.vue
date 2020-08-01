@@ -27,18 +27,18 @@
         class="card"
         width="600"
         height="600"
-        viewBox="-1248.2345089531165 -1547.8524966162418 2727.0341099966664 2259.416395800985"
+        viewBox="-1687 -1603 2727.0341099966664 2259.416395800985"
       >
         <template v-for="postWord in postWords[1]">
           <circle
             fill="red"
-            :key="postWord.word"
+            :key="postWord.key"
             :cx="postWord.x * 100"
             :cy="postWord.y * 100"
             r="10"
           />
           <text
-            :key="postWord.word"
+            :key="postWord.key"
             :x="postWord.x * 100"
             :y="postWord.y * 100"
             font-size="80px"
@@ -47,13 +47,13 @@
         <template v-for="postWord in postWords[2]">
           <circle
             fill="blue"
-            :key="postWord.word"
+            :key="postWord.key"
             :cx="postWord.x * 100"
             :cy="postWord.y * 100"
             r="10"
           />
           <text
-            :key="postWord.word"
+            :key="postWord.key"
             :x="postWord.x * 100"
             :y="postWord.y * 100"
             font-size="80px"
@@ -76,7 +76,7 @@
           <circle
             v-for="word in triangle.points"
             :fill="triangle.player === 1? 'red' : 'blue'"
-            :key="word.word"
+            :key="word.key"
             :cx="word.x * 100"
             :cy="word.y * 100"
             r="10"
@@ -112,8 +112,8 @@
       <div class="columns is-multiline">
         <div
           class="column is-2 has-text-centered"
-          v-for="(word, index) in hands"
-          :key="index"
+          v-for="word in hands"
+          :key="word.key"
           @click="postWord(word)"
         >
           <div class="card is-size-5">{{word.word}}</div>
@@ -167,6 +167,12 @@ export default {
         HANDS_NUM
       );
     },
+    maxPoint() {
+      return {
+        max: words.maxPoint(),
+        min: words.minPoint()
+      }
+    }
   },
   mounted() {},
   methods: {
@@ -254,6 +260,7 @@ export default {
         }
 
         if (isSpeech) {
+          console.log(content)
           const uttr = new SpeechSynthesisUtterance(content);
           speechSynthesis.speak(uttr);
         }
