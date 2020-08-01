@@ -308,14 +308,18 @@ export default {
           );
 
           let content = "";
-          if (score >= 12000) {
-            content = `${score}点だ！！！`;
-          } else if (score >= 12000) {
-            content = `${score}点だ！！！`;
+          if (score >= 10000) {
+            content = `夏の大三角！！！ ${score}点だ！！！`;
+          } else if (score >= 5000) {
+            content = `バミューダトライアングル！！！ ${score}点だ！！！`;
+          } else if (score >= 2000) {
+            content = `ピラミッド！！！ ${score}点だ！！！`;
+          } else if (score >= 1000) {
+            content = `おにぎり！！！ ${score}点だ！！！`;
           } else {
-            content = `${score}点だ！！！`;
+            content = `はんぺん！！！ ${score}点だ！！！`;
           }
-          return this.showTooltip(currentPlayer, content, 500, true);
+          return this.showTooltip(currentPlayer, content, 1000, true);
         });
     },
     showTooltip(player, content, time, isSpeech) {
