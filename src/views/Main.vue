@@ -1,6 +1,6 @@
 <template>
   <div class="container border mt-2">
-    <div class="is-size-1 has-text-centered">残り{{ 3 - Math.floor(turn/6) }}ターン</div>
+    <div class="is-size-1 has-text-centered">残り{{ leftTurn }}ターン</div>
     <div class="columns">
       <!-- プレイヤー1の情報 -->
       <div
@@ -130,6 +130,7 @@ import { calcTriangleArea } from "../PolygonUtil";
 
 const HANDS_NUM = 12;
 const SCORE_BIAS = 10;
+const TURN_NUM = 2;
 
 export default {
   data() {
@@ -170,9 +171,12 @@ export default {
     maxPoint() {
       return {
         max: words.maxPoint(),
-        min: words.minPoint()
-      }
-    }
+        min: words.minPoint(),
+      };
+    },
+    leftTurn() {
+      return TURN_NUM - Math.floor(this.turn / 6);
+    },
   },
   mounted() {},
   methods: {
@@ -216,6 +220,19 @@ export default {
       });
       this.changePlayer();
     },
+    gameReset() {
+      console.log("gameReset");
+      this.words = words.getWords();
+      this.postWords[1] = [];
+      this.postWords[2] = [];
+      this.triangles = [];
+      this.currentPlayer = 1;
+      this.tooltipContent1 = null;
+      this.tooltipContent2 = null;
+      this.showTooltipPlayer1 = false;
+      this.showTooltipPlayer2 = false;
+      this.turn = 0;
+    },
     // 三角形が完成した時の演出
     animationAddTriangle(currentPlayer, points) {
       return this.showTooltip(currentPlayer, [points[0].word].join("!!\n"), 500)
@@ -247,6 +264,26 @@ export default {
             500,
             true
           );
+        })
+        .then(() => {
+          if (this.leftTurn <= 0) {
+            if (this.playerScore(1) === this.playerScore(2)) {
+              Promise.all(
+                this.showTooltip(1, "引き分け", 5000),
+                this.showTooltip(2, "引き分け", 5000)
+              ).then(() => {
+                this.gameReset();
+              });
+            } else if (this.playerScore(1) >= this.playerScore(2)) {
+              this.showTooltip(1, "私の勝ちだ！！", 5000, true).then(() => {
+                this.gameReset();
+              });
+            } else {
+              this.showTooltip(2, "俺の勝ちだ！！", 5000, true).then(() => {
+                this.gameReset();
+              });
+            }
+          }
         });
     },
     showTooltip(player, content, time, isSpeech) {
@@ -260,7 +297,6 @@ export default {
         }
 
         if (isSpeech) {
-          console.log(content)
           const uttr = new SpeechSynthesisUtterance(content);
           speechSynthesis.speak(uttr);
         }
